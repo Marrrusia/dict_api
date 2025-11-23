@@ -1,0 +1,25 @@
+services:
+  translator-app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - LLM_API_URL=http://host.docker.internal:11434/api/generate
+    restart: unless-stopped
+
+  # Ollama сервис
+  ollama:
+    image: ollama/ollama:latest
+    platform: linux/arm64
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
