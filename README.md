@@ -7,8 +7,8 @@
 * Реализован просмотр истории выполненных переводов.
 
 Инструкция по развертыванию (Ollama уже в Docker, можно ее закомментировать и запустить локальную):
-1. Запустите приложение с помощью Docker Compose: ddocker-compose up -d
-2. **Установите модель docker-compose exec ollama ollama pull gemma2:2b**
+1. Запустите приложение с помощью Docker Compose: docker-compose up -d
+2. **Установите модель: docker-compose exec ollama ollama pull gemma2:2b**
 3. Приложение будет доступно по адресу: http://localhost:8000.
 
 Основные эндпоинты:
