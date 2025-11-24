@@ -3,8 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Сервис Перевода</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Умный Переводчик</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .translation-form, .history-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result, .error {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .result {
+            background: #f0f9ff;
+            border: 2px solid #bae6fd;
+        }
+
+        .error {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            color: #dc2626;
+        }
+
+        .translated-text {
+            font-size: 18px;
+            line-height: 1.6;
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .translation-info {
+            margin-top: 10px;
+            color: #666;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .history {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .history-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .history-original {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+
+        .history-translated {
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .history-meta {
+            font-size: 12px;
+            color: #888;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .empty-history {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+        }
+
+        .empty-history p {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-primary:hover, .btn-danger:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled, .btn-danger:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .history-item {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @media (max-width: 480px) {
+            .history-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .history-actions {
+                justify-content: space-between;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -19,7 +306,6 @@
                         <label for="text">Текст для перевода:</label>
                         <textarea id="text" name="text" rows="4" placeholder="Введите текст для перевода..." required></textarea>
                     </div>
-
 
                     <div class="form-row">
                         <div class="form-group">
@@ -69,11 +355,11 @@
                         </select>
                     </div>
 
-                    <button type="submit" id="translateBtn">Перевести</button>
+                    <button type="submit" id="translateBtn"> Перевести</button>
                 </form>
 
                 <div id="result" class="result" style="display: none;">
-                    <h3>Результат перевода:</h3>
+                    <h3> Результат перевода:</h3>
                     <div class="translated-text" id="translatedText"></div>
                     <div class="translation-info">
                         <small>ID перевода: <span id="translationId"></span></small>
@@ -81,25 +367,185 @@
                 </div>
 
                 <div id="error" class="error" style="display: none;">
-                    <h3>Ошибка:</h3>
+                    <h3> Ошибка:</h3>
                     <div id="errorMessage"></div>
                 </div>
             </div>
 
             <div class="history-section">
                 <div class="history-header">
-                    <h3>История переводов</h3>
+                    <h3> История переводов</h3>
                     <div class="history-actions">
-                        <button id="loadHistoryBtn" class="btn-primary">Загрузить историю</button>
+                        <button id="loadHistoryBtn" class="btn-primary"> Обновить</button>
+                        <button id="clearDbBtn" class="btn-danger">️ Очистить БД</button>
                     </div>
                 </div>
                 <div id="history" class="history"></div>
-                <div id="clearDbResult" class="result" style="display: none;"></div>
             </div>
         </main>
-
     </div>
 
-    <script src="/static/script.js"></script>
+    <script>
+        class TranslationApp {
+            constructor() {
+                this.initializeEventListeners();
+                this.loadHistory();
+            }
+
+            initializeEventListeners() {
+                document.getElementById('translateForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleTranslation();
+                });
+
+                document.getElementById('loadHistoryBtn').addEventListener('click', () => {
+                    this.loadHistory();
+                });
+
+                document.getElementById('clearDbBtn').addEventListener('click', () => {
+                    this.confirmClearDatabase();
+                });
+            }
+
+            async handleTranslation() {
+                const formData = new FormData(document.getElementById('translateForm'));
+                const data = {
+                    text: formData.get('text'),
+                    source_lang: formData.get('source_lang'),
+                    target_lang: formData.get('target_lang'),
+                    adaptation_type: formData.get('adaptation_type') || null
+                };
+
+                this.showLoading('translateBtn', 'Перевожу...');
+                this.hideResult();
+                this.hideError();
+
+                try {
+                    const response = await fetch('/translate', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        this.showResult(result);
+                        this.loadHistory(); // Обновляем историю после перевода
+                    } else {
+                        this.showError(result.detail);
+                    }
+                } catch (error) {
+                    this.showError('Сетевая ошибка: ' + error.message);
+                } finally {
+                    this.hideLoading('translateBtn', 'Перевести');
+                }
+            }
+
+            async loadHistory() {
+                this.showLoading('loadHistoryBtn', 'Загружаю...');
+
+                try {
+                    const response = await fetch('/history/translations?limit=10');
+                    const history = await response.json();
+
+                    if (response.ok) {
+                        this.displayHistory(history);
+                    }
+                } catch (error) {
+                    console.error('Ошибка загрузки истории:', error);
+                } finally {
+                    this.hideLoading('loadHistoryBtn', ' Обновить');
+                }
+            }
+
+            confirmClearDatabase() {
+                if (confirm('⚠️ Удалить всю историю переводов? Это действие нельзя отменить!')) {
+                    this.clearDatabase();
+                }
+            }
+
+            async clearDatabase() {
+                this.showLoading('clearDbBtn', 'Очистка...');
+
+                try {
+                    const response = await fetch('/clear', {
+                        method: 'DELETE'
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        this.displayHistory([]);
+                        alert(result.message);
+                    } else {
+                        alert(result.detail);
+                    }
+                } catch (error) {
+                    alert('Ошибка: ' + error.message);
+                } finally {
+                    this.hideLoading('clearDbBtn', 'Очистить БД');
+                }
+            }
+
+            showResult(result) {
+                document.getElementById('translatedText').textContent = result.translated_text;
+                document.getElementById('translationId').textContent = result.id;
+                document.getElementById('result').style.display = 'block';
+            }
+
+            showError(message) {
+                document.getElementById('errorMessage').textContent = message;
+                document.getElementById('error').style.display = 'block';
+            }
+
+            hideResult() {
+                document.getElementById('result').style.display = 'none';
+            }
+
+            hideError() {
+                document.getElementById('error').style.display = 'none';
+            }
+
+            showLoading(buttonId, text) {
+                const button = document.getElementById(buttonId);
+                button.innerHTML = `<div class="spinner"></div>${text}`;
+                button.disabled = true;
+            }
+
+            hideLoading(buttonId, text) {
+                const button = document.getElementById(buttonId);
+                button.textContent = text;
+                button.disabled = false;
+            }
+
+            displayHistory(history) {
+                const container = document.getElementById('history');
+
+                if (!history || history.length === 0) {
+                    container.innerHTML = '<div class="empty-history"><p>📝 История переводов пуста</p></div>';
+                    return;
+                }
+
+                container.innerHTML = history.map(item => `
+                    <div class="history-item">
+                        <div class="history-original">
+                            <strong>${item.source_lang} → ${item.target_lang}:</strong> ${item.original_text}
+                        </div>
+                        <div class="history-translated">
+                            <strong>Перевод:</strong> ${item.translated_text}
+                        </div>
+                        <div class="history-meta">
+                            <small>${new Date(item.created_at).toLocaleString('ru-RU')} • ID: ${item.id}</small>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new TranslationApp();
+        });
+    </script>
 </body>
 </html>

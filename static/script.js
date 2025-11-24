@@ -1,6 +1,7 @@
 class TranslationApp {
     constructor() {
         this.initializeEventListeners();
+        this.loadHistory(); // Автозагрузка истории при старте
     }
 
     initializeEventListeners() {
@@ -11,6 +12,14 @@ class TranslationApp {
 
         document.getElementById('loadHistoryBtn').addEventListener('click', () => {
             this.loadHistory();
+        });
+
+        document.getElementById('clearDbBtn').addEventListener('click', () => {
+            this.confirmClearDatabase();
+        });
+
+        document.getElementById('clearDbFooterBtn').addEventListener('click', () => {
+            this.confirmClearDatabase();
         });
     }
 
@@ -46,7 +55,7 @@ class TranslationApp {
         } catch (error) {
             this.showError('Сетевая ошибка: ' + error.message);
         } finally {
-            this.hideLoading('translateBtn', 'Перевести');
+            this.hideLoading('translateBtn', '🚀 Перевести');
         }
     }
 
@@ -65,7 +74,52 @@ class TranslationApp {
         } catch (error) {
             this.showError('Ошибка загрузки: ' + error.message);
         } finally {
-            this.hideLoading('loadHistoryBtn', 'Загрузить историю');
+            this.hideLoading('loadHistoryBtn', '🔄 Обновить');
+        }
+    }
+
+    confirmClearDatabase() {
+        const confirmation = confirm(
+            "⚠️ ВНИМАНИЕ! ⚠️\n\n" +
+            "Вы собираетесь удалить ВСЕ записи из базы данных.\n\n" +
+            "Это действие:\n" +
+            "• Удалит всю историю переводов\n" +
+            "• Не может быть отменено\n" +
+            "• Очистит кэш переводов\n\n" +
+            "Продолжить?"
+        );
+
+        if (confirmation) {
+            this.clearDatabase();
+        }
+    }
+
+    async clearDatabase() {
+        this.showLoading('clearDbBtn', 'Очистка...');
+        this.showLoading('clearDbFooterBtn', 'Очистка...');
+        this.hideClearDbResult();
+
+        try {
+            const response = await fetch('/clear-db', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                this.showClearDbResult(result.message, 'success');
+                this.displayHistory([]);
+            } else {
+                this.showClearDbResult(result.detail || 'Ошибка очистки базы данных', 'error');
+            }
+        } catch (error) {
+            this.showClearDbResult('Сетевая ошибка: ' + error.message, 'error');
+        } finally {
+            this.hideLoading('clearDbBtn', '🗑️ Очистить БД');
+            this.hideLoading('clearDbFooterBtn', '🗑️ Очистить базу данных');
         }
     }
 
@@ -105,7 +159,7 @@ class TranslationApp {
         const historyContainer = document.getElementById('history');
 
         if (!Array.isArray(history) || history.length === 0) {
-            historyContainer.innerHTML = '<p>История переводов пуста.</p>';
+            historyContainer.innerHTML = '<div class="empty-history"><p>📝 История переводов пуста</p></div>';
             return;
         }
 
@@ -119,9 +173,21 @@ class TranslationApp {
                 </div>
                 <div class="history-meta">
                     <span>${new Date(item.created_at).toLocaleString('ru-RU')}</span>
+                    <span>ID: ${item.id}</span>
                 </div>
             </div>
         `).join('');
+    }
+
+    showClearDbResult(message, type) {
+        const resultElement = document.getElementById('clearDbResult');
+        resultElement.textContent = message;
+        resultElement.className = `result ${type}`;
+        resultElement.style.display = 'block';
+    }
+
+    hideClearDbResult() {
+        document.getElementById('clearDbResult').style.display = 'none';
     }
 
     escapeHtml(text) {
