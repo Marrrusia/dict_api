@@ -21,13 +21,7 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     restart: unless-stopped
-    command: >
-      sh -c "
-        ollama serve &
-        sleep 10 &&
-        ollama pull gemma2:2b &&
-        wait
-      "
+
 
 volumes:
   ollama_data:
