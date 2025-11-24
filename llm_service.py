@@ -29,7 +29,7 @@ class LLMService:
         prompt = self._build_prompt(text, source_lang, target_lang, adaptation_type) #Построение промпта
 
         try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
+            async with httpx.AsyncClient(timeout=60.0) as client:
                 response = await client.post(  #генерация текста
                     self.api_url,
                     json={
