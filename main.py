@@ -3,8 +3,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session #Для работы с БД
-from typing import List, Optional #Типизация
-from pydantic import BaseModel, Field, field_validator #Валидация
+from typing import List, Optional #Типизация и валидация
+from pydantic import BaseModel, Field, field_validator
 
 from database import get_db, engine
 from llm_service import LLMService
@@ -164,19 +164,6 @@ async def get_translation_history(
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail="Ошибка при загрузке истории переводов")
-
-
-@app.get("/health", tags=["Вспомогательные инструменты"], summary="Проверка работоспособности",
-         description="Проверяет работоспособность сервиса",
-         responses={
-             200: {"description": "Сервис работает нормально"},
-             500: {"description": "Проблемы с сервисом"}  } )
-async def health_check(db: Session = Depends(get_db)):
-    try:
-        db.execute("SELECT 1")
-        return {"status": "healthy", "service": "translation-api"}
-    except Exception:
-        raise HTTPException(status_code=500, detail="Проблемы с подключением к базе данных")
 
 
 # Эндпоинт для очистки БД

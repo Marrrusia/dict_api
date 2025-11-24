@@ -4,7 +4,8 @@ from pydantic_settings import BaseSettings #Для управления конф
 class Settings(BaseSettings):
     database_url: str = "sqlite:///./translations.db" # Конфигурация базы данных
 
-    llm_api_url: str = "http://localhost:11434/api/generate" # Конфигурация LLM
+    #llm_api_url: str = "http://localhost:11434/api/generate" # Конфигурация LLM
+    llm_api_url: str = "http://ollama:11434/api/generate" # Конфигурация LLM
     llm_model: str = "gemma2:2b"
 
     app_host: str = "0.0.0.0" #Настройки веб-сервера FastAPI
