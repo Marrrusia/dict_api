@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Depends, HTTPException, Request, Query #Для работы с fastapi
-from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session #Для работы с БД
@@ -17,7 +16,6 @@ app = FastAPI( #Инициализация FastAPI приложения
     description="Сервис перевода текстов с использованием LLM"
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static") #для js и css
 templates = Jinja2Templates(directory="templates") #для html
 
 llm_service = LLMService() #Создание экземпляра сервиса переводов
@@ -71,7 +69,6 @@ async def read_root(request: Request):
           description="Переводит текст с одного языка на другой с использованием LLM",
           responses={
               200: {"description": "Успешный перевод"},
-              400: {"description": "Неверный запрос"},
               500: {"description": "Ошибка сервера"}
           }
           )
@@ -121,9 +118,9 @@ async def translate_text(request: TranslationRequest, db: Session = Depends(get_
     # Анализ ошибок
     except Exception as e:
         db.rollback()
-        if "LLM API error" in str(e):
+        if "Ошибка API" in str(e):
             raise HTTPException(status_code=500, detail="Ошибка подключения к сервису перевода.")
-        elif "Translation failed" in str(e):
+        elif "Перевод не удался" in str(e):
             raise HTTPException(status_code=500, detail="Ошибка при выполнении перевода. Попробуйте еще раз.")
         else:
             raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")

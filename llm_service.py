@@ -24,37 +24,35 @@ class LLMService:
             "pt": "Portuguese",
         }
 
-    async def translate_text( self, text: str, source_lang: str, target_lang: str,
-                              adaptation_type: Optional[str] = None ) -> str:
+    async def translate_text( self, text: str, source_lang: str, target_lang: str, adaptation_type: Optional[str] = None ) -> str:
+
         prompt = self._build_prompt(text, source_lang, target_lang, adaptation_type) #Построение промпта
 
         try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
-                response = await client.post(  #генерация текста
-                    self.api_url,
-                    json={
-                        "model": self.model,
-                        "prompt": prompt,
-                        "stream": False, #получаем ответ сразу не по частям
-                        "options": { #параметры генерации текста
-                            "temperature": 0.1, #для детерминированости ответов
-                            "top_p": 0.9, #ограничения контекстного окна
-                        }
+                request_data = {
+                    "model": self.model,
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        "temperature": 0.1,
+                        "top_p": 0.9,
                     }
-                )
+                }
+
+                async with httpx.AsyncClient(timeout=60.0) as client:
+                    response = await client.post(self.api_url, json=request_data)
 
                 if response.status_code == 200:
                     result = response.json()
                     translated_text = result["response"].strip() #извлечение сгенерированного текста
                     return self._clean_response(translated_text)
                 else: #Генерация исключения при ошибке
-                    raise Exception(f"API error: {response.status_code}")
+                    raise Exception(f"Ошибка API: {response.status_code}")
 
         except Exception as e: #Обработка исключения
-            raise Exception(f"Translation failed: {str(e)}")
+            raise Exception(f"Перевод не удался: {str(e)}")
 
-    def _build_prompt(self, text: str, source_lang: str, target_lang: str,
-                      adaptation_type: Optional[str] = None) -> str:
+    def _build_prompt(self, text: str, source_lang: str, target_lang: str, adaptation_type: Optional[str] = None) -> str:
 
         source_name = self.language_names.get(source_lang, source_lang)
         target_name = self.language_names.get(target_lang, target_lang)
@@ -73,13 +71,8 @@ class LLMService:
 
         return f"""<start_of_turn>user
 Translate the following text from {source_name} to {target_name}. {style_note}
-
-CRITICAL INSTRUCTIONS:
-- Output ONLY the translated text
-- Do NOT add any explanations
-- Do NOT write "Translation:" or similar prefixes
-- Do NOT include the original text
-- The output must be pure {target_name} text only
+insruction: output only the translated text, don't add any explanations do not write "Translation:" or similar prefixes, 
+do NOT include the original text, the output must be pure {target_name} text only
 
 Text: "{text}"<end_of_turn>
 <start_of_turn>model
@@ -88,5 +81,5 @@ Text: "{text}"<end_of_turn>
 
     def _clean_response(self, text: str) -> str: #Проверка что модель не вернула пустую строку
         if not text:
-            return "Translation error"
+            return "Перевод не удался"
         return text
