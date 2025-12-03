@@ -31,7 +31,7 @@ class TranslationRequest(BaseModel): #модель запроса
     target_lang: str = Field(..., description="Целевой язык", json_schema_extra={"example": "ru"})
     adaptation_type: Optional[str] = Field(None, description="Стиль перевода", json_schema_extra={"example": "casual"})
 
-    #Добавлена валидация для исключения возможности ввода неизвестных языков
+    #Валидация для исключения возможности ввода неизвестных языков
     @field_validator('source_lang')
     @classmethod
     def validate_source_lang(cls, v):
@@ -139,7 +139,7 @@ async def get_translation_history(
         limit: int = Query(100, description="Максимальное количество записей", ge=1, le=100),
         db: Session = Depends(get_db)
 ):
-    try: #Создает объект запроса SQLAlchemy (Translation таблица с которой работаем). С сортировкой по добавлению. Ограничевает колличество возвращаемых записей
+    try: #Создает объект запроса SQLAlchemy. С сортировкой по добавлению. Ограничевает колличество возвращаемых записей
         translations = db.query(models.Translation) \
             .order_by(models.Translation.created_at.desc()) \
             .offset(skip) \
